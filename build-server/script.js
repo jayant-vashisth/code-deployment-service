@@ -3,14 +3,15 @@ const path = require("path");
 const fs = require("fs");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const mime = require("mime-types");
+require('dotenv').config()
 
-const PROJECT_ID = process / env.PROJECT_ID;
+const PROJECT_ID = process.env.PROJECT_ID;
 
 const s3Client = new S3Client({
   region: "ap-south-1",
   credentials: {
-    accessKeyId: "",
-    secretAccessKey: "",
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   },
 });
 
@@ -40,6 +41,8 @@ async function init() {
     for (const filePath of distFolderContents) {
       if (fs.lstatSync(filePath).isDirectory()) continue;
 
+      console.log("uploading- ", filePath)
+
       const command = new PutObjectCommand({
         Bucket: "jayant-vercel-clone",
         Key: `__outputs/${PROJECT_ID}/${filePath}`,
@@ -48,8 +51,13 @@ async function init() {
       });
 
       await s3Client.send(command);
+
+      console.log("uploaded- ", filePath)
     }
 
     console.log("Done");
   });
 }
+
+
+init();
